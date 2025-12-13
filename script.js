@@ -24,7 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 tracks[key].gain = audioCtx.createGain();
                 tracks[key].gain.gain.value = tracks[key].volEl.value;
                 tracks[key].gain.connect(audioCtx.destination);
-                
                 tracks[key].volEl.addEventListener('input', (e) => {
                     if (tracks[key].gain) tracks[key].gain.gain.value = e.target.value;
                 });
@@ -32,7 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Audio Engines ---
     function playKick() {
         const osc = audioCtx.createOscillator();
         const g = audioCtx.createGain();
@@ -70,11 +68,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const g = audioCtx.createGain();
         g.gain.setValueAtTime(0.2, now);
         g.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-        noise.connect(filter).connect(g).connect(tracks.hihat.gain);
+        noise.connect(filter).connect(g).connect(audioCtx.destination);
         noise.start(now);
     }
 
-    // --- Rack & Track Setup ---
     const rackStructure = [[1], [2, 3], [4, 8, 5], [6, 7, 9, 10], [11, 12, 13, 14, 15]];
     let rowY = 0;
     rackStructure.forEach((row) => {
@@ -114,7 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- Engine ---
     function advanceSequencer() {
         const idx = currentStep - 1;
         const prevIdx = (currentStep - 2 + 16) % 16;
@@ -124,11 +120,9 @@ document.addEventListener('DOMContentLoaded', () => {
             t.pads[idx].classList.add('active-step');
         });
         allBalls[idx].classList.add('active-step');
-
         if (tracks.kick.state[idx]) playKick();
         if (tracks.snare.state[idx]) playSnare();
         if (tracks.hihat.state[idx]) playHiHat();
-
         currentStep = (currentStep % 16) + 1;
     }
 
@@ -156,7 +150,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Advanced Features ---
     document.getElementById('random-btn').addEventListener('click', () => {
         Object.keys(tracks).forEach(key => {
             tracks[key].state = tracks[key].state.map(() => Math.random() > (key === 'hihat' ? 0.6 : 0.85));
@@ -171,12 +164,12 @@ document.addEventListener('DOMContentLoaded', () => {
             snare: { state: tracks.snare.state, vol: tracks.snare.volEl.value },
             hihat: { state: tracks.hihat.state, vol: tracks.hihat.volEl.value }
         };
-        localStorage.setItem('billiardsPatternV2', JSON.stringify(data));
-        alert('Pattern & Mix Saved!');
+        localStorage.setItem('billiardsPatternV7', JSON.stringify(data));
+        alert('Saved!');
     });
 
     document.getElementById('load-btn').addEventListener('click', () => {
-        const data = JSON.parse(localStorage.getItem('billiardsPatternV2'));
+        const data = JSON.parse(localStorage.getItem('billiardsPatternV7'));
         if (!data) return;
         bpmSlider.value = data.bpm;
         bpmDisplay.textContent = data.bpm;

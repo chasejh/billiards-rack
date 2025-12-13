@@ -1,35 +1,66 @@
 body {
     display: flex; justify-content: center; align-items: flex-start;
     min-height: 100vh; margin: 0; background-color: #38761d;
-    padding-top: 30px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding-top: 30px; font-family: sans-serif;
 }
 
 #billiards-table { display: flex; flex-direction: column; align-items: center; }
-
 #rack { position: relative; width: 200px; height: 160px; transform: translateY(60px); }
 
-/* --- Balls --- */
+/* --- General Ball Styles --- */
 .ball {
     position: absolute; width: 40px; height: 40px; border-radius: 50%;
     display: flex; justify-content: center; align-items: center;
     font-weight: bold; color: black; cursor: pointer;
     box-shadow: 2px 2px 5px rgba(0,0,0,0.5); border: 1px solid #333; z-index: 1; 
 }
-.ball::before { content: ""; position: absolute; width: 50%; height: 50%; background-color: white; border-radius: 50%; z-index: -1; }
+
+.ball::before { 
+    content: ""; position: absolute; width: 20px; height: 20px; 
+    background-color: white; border-radius: 50%; z-index: -1; 
+}
+
+/* --- Color Mapping --- */
+.ball-1, .ball-9, .step-ball-1, .step-ball-9 { --ball-color: #ffcc00; background-color: var(--ball-color); }
+.ball-2, .ball-10, .step-ball-2, .step-ball-10 { --ball-color: #0033ff; background-color: var(--ball-color); }
+.ball-3, .ball-11, .step-ball-3, .step-ball-11 { --ball-color: #ff0000; background-color: var(--ball-color); }
+.ball-4, .ball-12, .step-ball-4, .step-ball-12 { --ball-color: #660099; background-color: var(--ball-color); }
+.ball-5, .ball-13, .step-ball-5, .step-ball-13 { --ball-color: #ff6600; background-color: var(--ball-color); }
+.ball-6, .ball-14, .step-ball-6, .step-ball-14 { --ball-color: #006600; background-color: var(--ball-color); }
+.ball-7, .ball-15, .step-ball-7, .step-ball-15 { --ball-color: #990000; background-color: var(--ball-color); }
+
+/* 8 Ball - Border removed (set to match dark ball edge) */
+.ball-8, .step-ball-8 { background-color: #000000; color: black; border: 1px solid #333; }
+
+.striped, .step-ball-striped { 
+    background-image: linear-gradient(to top, white 25%, transparent 25%, transparent 75%, white 75%) !important;
+    background-color: var(--ball-color) !important;
+}
 
 .cue-ball { background-color: white; margin-bottom: 40px; color: transparent; border: 3px solid #333; z-index: 10; }
 .cue-ball::before { content: none; }
-.ball-8 { background-color: black; color: black; border: 2px solid white; }
-.ball-1 { background-color: gold; } .ball-2 { background-color: royalblue; } .ball-3 { background-color: red; }
-.ball-4 { background-color: purple; } .ball-5 { background-color: orange; } .ball-6 { background-color: green; }
-.ball-7 { background-color: maroon; }
-.striped { background: linear-gradient(to top, white 30%, transparent 30%, transparent 70%, white 70%); }
-/* (Repeat ball-9 to ball-15 as per previous CSS) */
 
-/* --- Control Buttons --- */
+/* --- Sequencer UI --- */
+.sequencer-track-container { width: 950px; margin-top: 10px; display: flex; align-items: center; }
+.track-controls { display: flex; flex-direction: column; align-items: flex-end; width: 100px; margin-right: 15px; }
+.track-label { font-weight: bold; color: white; font-size: 11px; margin-bottom: 5px; }
+.vol-slider { width: 60px; height: 4px; cursor: pointer; }
+
+.sequencer-track { display: flex; width: 650px; justify-content: space-between; padding: 5px 0; }
+.step-ball { 
+    width: 30px; height: 30px; border-radius: 50%; display: flex; justify-content: center; align-items: center; 
+    font-size: 10px; font-weight: bold; color: black; cursor: pointer; box-shadow: 1px 1px 3px rgba(0,0,0,0.4); 
+    border: 1px solid #333; position: relative; z-index: 1; 
+}
+.step-ball::before { content: ""; position: absolute; width: 15px; height: 15px; background-color: white; border-radius: 50%; z-index: -1; }
+.step-ball-16 { background-color: white !important; color: transparent; }
+.step-ball-16::before { content: none; }
+.step-ball.armed { border: 2px solid gold; box-shadow: 0 0 8px gold; }
+
+/* Control Buttons (Red 3-Ball) */
 #play-pause-btn {
-    width: 35px; height: 35px; border-radius: 50%; background-color: red; border: 1px solid #333; 
-    cursor: pointer; margin-top: 170px; position: relative; display: flex; justify-content: center; align-items: center;
+    width: 35px; height: 35px; border-radius: 50%; background-color: #ff0000; border: 1px solid #333; 
+    cursor: pointer; margin-top: 100px; position: relative; display: flex; justify-content: center; align-items: center;
 }
 #play-pause-btn::before { content: ""; position: absolute; width: 16px; height: 16px; background-color: white; border-radius: 50%; z-index: 1; }
 #play-pause-btn.sequencer-running::after, #play-pause-btn.sequencer-running::before { content: ''; position: absolute; width: 70%; height: 3px; background: black; z-index: 2; }
@@ -39,27 +70,15 @@ body {
 
 #bpm-control { margin-top: 15px; color: white; display: flex; flex-direction: column; align-items: center; }
 
-/* --- Tracks & Mixing --- */
-.sequencer-track-container { width: 950px; margin-top: 10px; display: flex; align-items: center; }
-.track-controls { display: flex; flex-direction: column; align-items: flex-end; width: 100px; margin-right: 15px; }
-.track-label { font-weight: bold; color: white; font-size: 11px; margin-bottom: 5px; }
-.vol-slider { width: 60px; height: 4px; cursor: pointer; }
-
-.sequencer-track { display: flex; width: 650px; justify-content: space-between; padding: 5px 0; }
-.step-ball { width: 30px; height: 30px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 10px; font-weight: bold; color: black; cursor: pointer; box-shadow: 1px 1px 3px rgba(0,0,0,0.4); border: 1px solid #333; position: relative; z-index: 1; transition: 0.1s; }
-.step-ball::before { content: ""; position: absolute; width: 14px; height: 14px; background-color: white; border-radius: 50%; z-index: -1; }
-.step-ball.armed { border: 2px solid gold; box-shadow: 0 0 5px 2px rgba(255, 255, 0, 0.4); }
-
 .clear-pattern-btn { width: 30px; height: 30px; border-radius: 50%; background-color: #f44336; border: 2px solid white; cursor: pointer; margin-left: 20px; position: relative; }
 .clear-pattern-btn::before, .clear-pattern-btn::after { content: ''; position: absolute; width: 60%; height: 2px; background: white; top: 13px; left: 6px; }
 .clear-pattern-btn::before { transform: rotate(45deg); }
 .clear-pattern-btn::after { transform: rotate(-45deg); }
 
 #system-controls { margin-top: 25px; display: flex; gap: 15px; }
-#system-controls button { padding: 10px 20px; border-radius: 20px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
-#random-btn { background: gold; color: #333; }
+#system-controls button { padding: 10px 20px; border-radius: 20px; border: none; cursor: pointer; font-weight: bold; }
+#random-btn { background: #ffcc00; color: #333; }
 #save-btn { background: white; color: #38761d; }
 #load-btn { background: #333; color: white; }
-#system-controls button:hover { transform: scale(1.05); }
 
-.active-step { box-shadow: 0 0 10px 5px rgba(255, 0, 0, 0.7) !important; border: 3px solid rgba(255, 0, 0, 0.9) !important; }
+.active-step { box-shadow: 0 0 10px 5px rgba(255, 0, 0, 0.7) !important; border: 3px solid white !important; }
