@@ -7,7 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const tracks = {
         kick: { el: document.getElementById('kick-sequencer-track'), clear: document.getElementById('clear-kick-btn'), volEl: document.getElementById('kick-vol'), pads: [], state: Array(16).fill(false), gain: null },
         snare: { el: document.getElementById('snare-sequencer-track'), clear: document.getElementById('clear-snare-btn'), volEl: document.getElementById('snare-vol'), pads: [], state: Array(16).fill(false), gain: null },
-        hihat: { el: document.getElementById('hihat-sequencer-track'), clear: document.getElementById('clear-hihat-btn'), volEl: document.getElementById('hihat-vol'), pads: [], state: Array(16).fill(false), gain: null }
+        hihat: { el: document.getElementById('hihat-sequencer-track'), clear: document.getElementById('clear-hihat-btn'), volEl: document.getElementById('hihat-vol'), pads: [], state: Array(16).fill(false), gain: null },
+        clap: { el: document.getElementById('clap-sequencer-track'), clear: document.getElementById('clear-clap-btn'), volEl: document.getElementById('clap-vol'), pads: [], state: Array(16).fill(false), gain: null },
+        crash: { el: document.getElementById('crash-sequencer-track'), clear: document.getElementById('clear-crash-btn'), volEl: document.getElementById('crash-vol'), pads: [], state: Array(16).fill(false), gain: null }
     };
 
     const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -31,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- Audio Synthesis Engines ---
     function playKick() {
         const osc = audioCtx.createOscillator();
         const g = audioCtx.createGain();
@@ -68,10 +71,54 @@ document.addEventListener('DOMContentLoaded', () => {
         const g = audioCtx.createGain();
         g.gain.setValueAtTime(0.2, now);
         g.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-        noise.connect(filter).connect(g).connect(audioCtx.destination);
+        noise.connect(filter).connect(g).connect(tracks.hihat.gain);
         noise.start(now);
     }
 
+    function playClap() {
+        const now = audioCtx.currentTime;
+        const noise = audioCtx.createBufferSource();
+        const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.2, audioCtx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < output.length; i++) output[i] = Math.random() * 2 - 1;
+        noise.buffer = noiseBuffer;
+
+        const g = audioCtx.createGain();
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'bandpass'; filter.frequency.value = 1200;
+
+        // Triple-trigger effect
+        g.gain.setValueAtTime(0.8, now);
+        g.gain.exponentialRampToValueAtTime(0.01, now + 0.01);
+        g.gain.setValueAtTime(0.8, now + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.01, now + 0.035);
+        g.gain.setValueAtTime(0.8, now + 0.05);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
+        noise.connect(filter).connect(g).connect(tracks.clap.gain);
+        noise.start(now);
+    }
+
+    function playCrash() {
+        const now = audioCtx.currentTime;
+        const noise = audioCtx.createBufferSource();
+        const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 2, audioCtx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < output.length; i++) output[i] = Math.random() * 2 - 1;
+        noise.buffer = noiseBuffer;
+
+        const g = audioCtx.createGain();
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'highpass'; filter.frequency.value = 2500;
+
+        g.gain.setValueAtTime(0.6, now);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
+
+        noise.connect(filter).connect(g).connect(tracks.crash.gain);
+        noise.start(now);
+    }
+
+    // --- Rack & Track Setup ---
     const rackStructure = [[1], [2, 3], [4, 8, 5], [6, 7, 9, 10], [11, 12, 13, 14, 15]];
     let rowY = 0;
     rackStructure.forEach((row) => {
@@ -111,6 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // --- Sequencer Logic ---
     function advanceSequencer() {
         const idx = currentStep - 1;
         const prevIdx = (currentStep - 2 + 16) % 16;
@@ -120,13 +168,17 @@ document.addEventListener('DOMContentLoaded', () => {
             t.pads[idx].classList.add('active-step');
         });
         allBalls[idx].classList.add('active-step');
+
         if (tracks.kick.state[idx]) playKick();
         if (tracks.snare.state[idx]) playSnare();
         if (tracks.hihat.state[idx]) playHiHat();
+        if (tracks.clap.state[idx]) playClap();
+        if (tracks.crash.state[idx]) playCrash();
+
         currentStep = (currentStep % 16) + 1;
     }
 
-    playPauseBtn.addEventListener('click', () => {
+    function toggleSequencer() {
         initAudio();
         if (sequenceInterval) {
             clearInterval(sequenceInterval);
@@ -139,7 +191,10 @@ document.addEventListener('DOMContentLoaded', () => {
             playPauseBtn.classList.add('sequencer-running');
             sequenceInterval = setInterval(advanceSequencer, tempo);
         }
-    });
+    }
+
+    playPauseBtn.addEventListener('click', toggleSequencer);
+    window.addEventListener('keydown', (e) => { if (e.code === 'Space') { e.preventDefault(); toggleSequencer(); } });
 
     bpmSlider.addEventListener('input', (e) => {
         bpmDisplay.textContent = e.target.value;
@@ -152,32 +207,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('random-btn').addEventListener('click', () => {
         Object.keys(tracks).forEach(key => {
-            tracks[key].state = tracks[key].state.map(() => Math.random() > (key === 'hihat' ? 0.6 : 0.85));
+            tracks[key].state = tracks[key].state.map(() => Math.random() > 0.8);
             tracks[key].pads.forEach((p, i) => p.classList.toggle('armed', tracks[key].state[i]));
         });
     });
 
     document.getElementById('save-btn').addEventListener('click', () => {
-        const data = {
-            bpm: bpmSlider.value,
-            kick: { state: tracks.kick.state, vol: tracks.kick.volEl.value },
-            snare: { state: tracks.snare.state, vol: tracks.snare.volEl.value },
-            hihat: { state: tracks.hihat.state, vol: tracks.hihat.volEl.value }
-        };
-        localStorage.setItem('billiardsPatternV7', JSON.stringify(data));
+        const data = { bpm: bpmSlider.value };
+        Object.keys(tracks).forEach(k => data[k] = tracks[k].state);
+        localStorage.setItem('billiardsPatternV9', JSON.stringify(data));
         alert('Saved!');
     });
 
     document.getElementById('load-btn').addEventListener('click', () => {
-        const data = JSON.parse(localStorage.getItem('billiardsPatternV7'));
+        const data = JSON.parse(localStorage.getItem('billiardsPatternV9'));
         if (!data) return;
         bpmSlider.value = data.bpm;
         bpmDisplay.textContent = data.bpm;
-        ['kick', 'snare', 'hihat'].forEach(key => {
-            tracks[key].state = data[key].state;
-            tracks[key].volEl.value = data[key].vol;
-            if (tracks[key].gain) tracks[key].gain.gain.value = data[key].vol;
-            tracks[key].pads.forEach((p, i) => p.classList.toggle('armed', data[key].state[i]));
+        Object.keys(tracks).forEach(k => {
+            if (data[k]) {
+                tracks[k].state = data[k];
+                tracks[k].pads.forEach((p, i) => p.classList.toggle('armed', data[k][i]));
+            }
         });
     });
 });
