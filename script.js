@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     bpmSlider.addEventListener('input', (e) => {
-        //bpmDisplay.textContent = e.target.value;
+        bpmDisplay.textContent = e.target.value;
         tempo = 60000 / e.target.value;
         if (sequenceInterval) {
             clearInterval(sequenceInterval);
@@ -280,4 +280,40 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // --- Default Pattern ---
+    function applyPattern(data) {
+        bpmSlider.value = data.bpm || bpmSlider.value;
+        bpmDisplay.textContent = bpmSlider.value;
+        Object.keys(tracks).forEach(key => {
+            if (Array.isArray(data[key])) {
+                tracks[key].state = data[key].slice();
+                tracks[key].pads.forEach((p, i) => p.classList.toggle('armed', tracks[key].state[i]));
+            } else if (data[key] && Array.isArray(data[key].state)) {
+                tracks[key].state = data[key].state.slice();
+                tracks[key].pads.forEach((p, i) => p.classList.toggle('armed', tracks[key].state[i]));
+                if (data[key].vol !== undefined) {
+                    tracks[key].volEl.value = data[key].vol;
+                    if (tracks[key].gain) tracks[key].gain.gain.value = data[key].vol;
+                }
+            }
+        });
+    }
+
+    const defaultPattern = {
+        bpm: 250,
+        kick: [1,0,3,0,0,0,7,8,0,10,0,0,0,14,0,0],
+        snare: [0,0,0,0,5,0,0,0,0,0,0,12,0,0,15,16],
+        hihat: [0,2,0,4,0,6,0,0,9,0,11,0,13,0,0,16],
+        clap: Array.from({ length: 16 }, (_, i) => [5,12].includes(i)),
+        crash: Array.from({ length: 16 }, (_, i) => [0,10].includes(i)),
+    };
+
+    // Apply default on first load only if no saved pattern exists
+    if (!localStorage.getItem('billiardsPatternFinal')) {
+        applyPattern(defaultPattern);
+        tempo = 60000 / bpmSlider.value;
+    } else {
+        bpmDisplay.textContent = bpmSlider.value;
+    }
 });

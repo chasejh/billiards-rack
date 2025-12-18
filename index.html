@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Billiards Master Sequencer</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div id="billiards-table">
-        <div class="ball cue-ball" data-ball-number="16"></div> 
+        <div class="ball cue-ball" data-ball-number="16"></div>
         <div id="rack"></div>
-        
+
         <button id="play-pause-btn"></button>
-        
+
         <div id="engine-toggle-container">
             <span>SAMPLES</span>
             <label class="switch">
@@ -23,36 +25,51 @@
         </div>
 
         <div id="bpm-control">
-            <label for="bpm-slider">TEMPO<span id="bpm-display"></span></label>
+            <label for="bpm-slider">TEMPO <span id="bpm-display"></span></label>
             <input type="range" id="bpm-slider" min="0" max="800" value="400">
         </div>
-        
+
         <div class="sequencer-track-container">
-            <div class="track-controls"><div class="track-label">KICK</div><input type="range" class="vol-slider" id="kick-vol" min="0" max="1" step="0.1" value="0.8"></div>
+            <div class="track-controls">
+                <div class="track-label">KICK</div><input type="range" class="vol-slider" id="kick-vol" min="0" max="1"
+                    step="0.1" value="0.8">
+            </div>
             <div class="sequencer-track" id="kick-sequencer-track"></div>
             <button id="clear-kick-btn" class="clear-pattern-btn"></button>
         </div>
-        
+
         <div class="sequencer-track-container">
-            <div class="track-controls"><div class="track-label">SNARE</div><input type="range" class="vol-slider" id="snare-vol" min="0" max="1" step="0.1" value="0.6"></div>
+            <div class="track-controls">
+                <div class="track-label">SNARE</div><input type="range" class="vol-slider" id="snare-vol" min="0"
+                    max="1" step="0.1" value="0.6">
+            </div>
             <div class="sequencer-track" id="snare-sequencer-track"></div>
             <button id="clear-snare-btn" class="clear-pattern-btn"></button>
         </div>
 
         <div class="sequencer-track-container">
-            <div class="track-controls"><div class="track-label">HI-HAT</div><input type="range" class="vol-slider" id="hihat-vol" min="0" max="1" step="0.1" value="0.4"></div>
+            <div class="track-controls">
+                <div class="track-label">HI-HAT</div><input type="range" class="vol-slider" id="hihat-vol" min="0"
+                    max="1" step="0.1" value="0.4">
+            </div>
             <div class="sequencer-track" id="hihat-sequencer-track"></div>
             <button id="clear-hihat-btn" class="clear-pattern-btn"></button>
         </div>
 
         <div class="sequencer-track-container">
-            <div class="track-controls"><div class="track-label">CLAP</div><input type="range" class="vol-slider" id="clap-vol" min="0" max="1" step="0.1" value="0.5"></div>
+            <div class="track-controls">
+                <div class="track-label">CLAP</div><input type="range" class="vol-slider" id="clap-vol" min="0" max="1"
+                    step="0.1" value="0.5">
+            </div>
             <div class="sequencer-track" id="clap-sequencer-track"></div>
             <button id="clear-clap-btn" class="clear-pattern-btn"></button>
         </div>
 
         <div class="sequencer-track-container">
-            <div class="track-controls"><div class="track-label">CRASH</div><input type="range" class="vol-slider" id="crash-vol" min="0" max="1" step="0.1" value="0.4"></div>
+            <div class="track-controls">
+                <div class="track-label">CRASH</div><input type="range" class="vol-slider" id="crash-vol" min="0"
+                    max="1" step="0.1" value="0.4">
+            </div>
             <div class="sequencer-track" id="crash-sequencer-track"></div>
             <button id="clear-crash-btn" class="clear-pattern-btn"></button>
         </div>
@@ -62,7 +79,46 @@
             <button id="save-btn">Save Pattern</button>
             <button id="load-btn">Load Pattern</button>
         </div>
+        <div class="signature">made with real billiards samples by <a href="jesschase.com/about">Jess Chase</a></div>
+        <ul class="socials" aria-label="Social Bar">
+            <li id="dataItem-mhxwqwry-comp-mhxwqwrf" class="O6KwRn"><a data-testid="linkElement"
+                    href="https://open.spotify.com/artist/1CbXtqHQ0rnhrOjxqKRyL4" target="_blank"
+                    rel="noreferrer noopener" class="oRtuWN" aria-label="Spotify"><img sizes="undefinedpx"
+                        srcset="https://static.wixstatic.com/media/11062b_e44dc14ec801433e81ba6501051ebba2~mv2.png/v1/fill/w_20,h_20,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/11062b_e44dc14ec801433e81ba6501051ebba2~mv2.png 1x, https://static.wixstatic.com/media/11062b_e44dc14ec801433e81ba6501051ebba2~mv2.png/v1/fill/w_40,h_40,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/11062b_e44dc14ec801433e81ba6501051ebba2~mv2.png 2x"
+                        id="img_1_comp-mhxwqwrf"
+                        src="https://static.wixstatic.com/media/11062b_e44dc14ec801433e81ba6501051ebba2~mv2.png/v1/fill/w_20,h_20,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/11062b_e44dc14ec801433e81ba6501051ebba2~mv2.png"
+                        alt="Spotify" style="object-fit:cover" class="YaS0jR Tj01hh"></a></li>
+            <li id="dataItem-mhxwqwry2-comp-mhxwqwrf" class="O6KwRn"><a data-testid="linkElement"
+                    href="https://music.apple.com/us/artist/jess-chase/1747558932" target="_blank"
+                    rel="noreferrer noopener" class="oRtuWN" aria-label="Apple Music"><img sizes="undefinedpx"
+                        srcset="https://static.wixstatic.com/media/11062b_4cf85f8d931c417280d993ecf42cadaf~mv2.png/v1/fill/w_20,h_20,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/11062b_4cf85f8d931c417280d993ecf42cadaf~mv2.png 1x, https://static.wixstatic.com/media/11062b_4cf85f8d931c417280d993ecf42cadaf~mv2.png/v1/fill/w_40,h_40,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/11062b_4cf85f8d931c417280d993ecf42cadaf~mv2.png 2x"
+                        id="img_2_comp-mhxwqwrf"
+                        src="https://static.wixstatic.com/media/11062b_4cf85f8d931c417280d993ecf42cadaf~mv2.png/v1/fill/w_20,h_20,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/11062b_4cf85f8d931c417280d993ecf42cadaf~mv2.png"
+                        alt="Apple Music" style="object-fit:cover" class="YaS0jR Tj01hh"></a></li>
+            <li id="dataItem-mhxwqwrz-comp-mhxwqwrf" class="O6KwRn"><a data-testid="linkElement"
+                    href="http://tiktok.com/@jessicachase" target="_blank" rel="noreferrer noopener" class="oRtuWN"
+                    aria-label="TikTok"><img sizes="undefinedpx"
+                        srcset="https://static.wixstatic.com/media/11062b_ad1a1e62a5bb45c7835a3ec11d5188f2~mv2.png/v1/fill/w_20,h_20,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/11062b_ad1a1e62a5bb45c7835a3ec11d5188f2~mv2.png 1x, https://static.wixstatic.com/media/11062b_ad1a1e62a5bb45c7835a3ec11d5188f2~mv2.png/v1/fill/w_40,h_40,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/11062b_ad1a1e62a5bb45c7835a3ec11d5188f2~mv2.png 2x"
+                        id="img_3_comp-mhxwqwrf"
+                        src="https://static.wixstatic.com/media/11062b_ad1a1e62a5bb45c7835a3ec11d5188f2~mv2.png/v1/fill/w_20,h_20,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/11062b_ad1a1e62a5bb45c7835a3ec11d5188f2~mv2.png"
+                        alt="TikTok" style="object-fit:cover" class="YaS0jR Tj01hh"></a></li>
+            <li id="dataItem-mhxwqwrz1-comp-mhxwqwrf" class="O6KwRn"><a data-testid="linkElement"
+                    href="https://www.youtube.com/@jess_chase" target="_blank" rel="noreferrer noopener" class="oRtuWN"
+                    aria-label="Youtube"><img sizes="undefinedpx"
+                        srcset="https://static.wixstatic.com/media/11062b_f67ec9c36d8a431eabf904a991d9647f~mv2.png/v1/fill/w_20,h_20,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/11062b_f67ec9c36d8a431eabf904a991d9647f~mv2.png 1x, https://static.wixstatic.com/media/11062b_f67ec9c36d8a431eabf904a991d9647f~mv2.png/v1/fill/w_40,h_40,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/11062b_f67ec9c36d8a431eabf904a991d9647f~mv2.png 2x"
+                        id="img_4_comp-mhxwqwrf"
+                        src="https://static.wixstatic.com/media/11062b_f67ec9c36d8a431eabf904a991d9647f~mv2.png/v1/fill/w_20,h_20,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/11062b_f67ec9c36d8a431eabf904a991d9647f~mv2.png"
+                        alt="Youtube" style="object-fit:cover" class="YaS0jR Tj01hh"></a></li>
+            <li id="dataItem-mhxwqwrz3-comp-mhxwqwrf" class="O6KwRn"><a data-testid="linkElement"
+                    href="https://www.instagram.com/jesschase.wav" target="_blank" rel="noreferrer noopener"
+                    class="oRtuWN" aria-label="Instagram"><img sizes="undefinedpx"
+                        srcset="https://static.wixstatic.com/media/11062b_6e9638ad803e4099a6116eb750b5a584~mv2.png/v1/fill/w_20,h_20,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/11062b_6e9638ad803e4099a6116eb750b5a584~mv2.png 1x, https://static.wixstatic.com/media/11062b_6e9638ad803e4099a6116eb750b5a584~mv2.png/v1/fill/w_40,h_40,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/11062b_6e9638ad803e4099a6116eb750b5a584~mv2.png 2x"
+                        id="img_5_comp-mhxwqwrf"
+                        src="https://static.wixstatic.com/media/11062b_6e9638ad803e4099a6116eb750b5a584~mv2.png/v1/fill/w_20,h_20,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/11062b_6e9638ad803e4099a6116eb750b5a584~mv2.png"
+                        alt="Instagram" style="object-fit:cover" class="YaS0jR Tj01hh"></a></li>
+        </ul>
     </div>
     <script src="script.js"></script>
 </body>
+
 </html>
