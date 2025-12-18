@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     bpmSlider.addEventListener('input', (e) => {
-        bpmDisplay.textContent = e.target.value;
+        //bpmDisplay.textContent = e.target.value;
         tempo = 60000 / e.target.value;
         if (sequenceInterval) {
             clearInterval(sequenceInterval);
