@@ -13,9 +13,18 @@
         
         <button id="play-pause-btn"></button>
         
+        <div id="engine-toggle-container">
+            <span>SAMPLES</span>
+            <label class="switch">
+                <input type="checkbox" id="engine-toggle">
+                <span class="slider round"></span>
+            </label>
+            <span>SYNTH</span>
+        </div>
+
         <div id="bpm-control">
-            <label for="bpm-slider">BPM: <span id="bpm-display">120</span></label>
-            <input type="range" id="bpm-slider" min="0" max="200" value="120">
+            <label for="bpm-slider">BPM: <span id="bpm-display">400</span></label>
+            <input type="range" id="bpm-slider" min="0" max="800" value="400">
         </div>
         
         <div class="sequencer-track-container">
