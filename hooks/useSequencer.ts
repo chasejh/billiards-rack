@@ -20,36 +20,14 @@ import type { SavedPattern, TrackState } from "@/types";
 
 const STEPS = 16;
 
-function getInitialState(): {
+/** Static default so server and client render the same (avoids hydration mismatch). */
+function getDefaultState(): {
   bpm: number;
-  useSynth: boolean;
   trackState: Record<TrackId, TrackState>;
   trackVol: Record<TrackId, number>;
 } {
-  const saved = loadFromStorage();
-  if (saved) {
-    return {
-      bpm: saved.bpm,
-      useSynth: false,
-      trackState: {
-        kick: saved.kick.state.slice(),
-        snare: saved.snare.state.slice(),
-        hihat: saved.hihat.state.slice(),
-        clap: saved.clap.state.slice(),
-        crash: saved.crash.state.slice(),
-      },
-      trackVol: {
-        kick: saved.kick.vol,
-        snare: saved.snare.vol,
-        hihat: saved.hihat.vol,
-        clap: saved.clap.vol,
-        crash: saved.crash.vol,
-      },
-    };
-  }
   return {
     bpm: DEFAULT_PATTERN.bpm,
-    useSynth: false,
     trackState: {
       kick: DEFAULT_PATTERN.kick.state.slice(),
       snare: DEFAULT_PATTERN.snare.state.slice(),
@@ -68,16 +46,16 @@ function getInitialState(): {
 }
 
 export function useSequencer() {
+  const defaultState = getDefaultState();
   const [running, setRunning] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
-  const initial = getInitialState();
-  const [bpm, setBpm] = useState(initial.bpm);
+  const [bpm, setBpm] = useState(defaultState.bpm);
   const [useSynth, setUseSynth] = useState(false);
   const [trackState, setTrackState] = useState<Record<TrackId, TrackState>>(
-    initial.trackState
+    defaultState.trackState
   );
   const [trackVol, setTrackVol] = useState<Record<TrackId, number>>(
-    initial.trackVol
+    defaultState.trackVol
   );
 
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -92,6 +70,32 @@ export function useSequencer() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const tempoMs = 60000 / bpm;
+
+  useEffect(() => {
+    const saved = loadFromStorage();
+    if (!saved) return;
+    setBpm(saved.bpm);
+    setTrackState({
+      kick: saved.kick.state.slice(),
+      snare: saved.snare.state.slice(),
+      hihat: saved.hihat.state.slice(),
+      clap: saved.clap.state.slice(),
+      crash: saved.crash.state.slice(),
+    });
+    setTrackVol({
+      kick: saved.kick.vol,
+      snare: saved.snare.vol,
+      hihat: saved.hihat.vol,
+      clap: saved.clap.vol,
+      crash: saved.crash.vol,
+    });
+    const g = gainsRef.current;
+    if (g) {
+      TRACK_IDS.forEach((key) => {
+        g[key].gain.value = saved[key].vol;
+      });
+    }
+  }, []);
 
   const advance = useCallback(() => {
     setCurrentStep((s) => {
