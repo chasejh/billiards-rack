@@ -11,7 +11,7 @@ export function PlayPauseButton({ running, onClick }: PlayPauseButtonProps) {
       type="button"
       onClick={onClick}
       className={`
-        w-9 h-9 rounded-full border border-[#333] cursor-pointer mt-12 sm:mt-[100px] relative
+        w-9 h-9 rounded-full border border-[#333] cursor-pointer mt-24 sm:mt-[100px] relative
         flex items-center justify-center
         bg-red-600
         before:content-[''] before:absolute before:w-4 before:h-4 before:bg-white before:rounded-full before:z-[1]
