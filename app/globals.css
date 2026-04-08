@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Pool ball colors and step ball highlight - easier in CSS */
+.ball-1, .ball-9, .step-ball-1, .step-ball-9 { --ball-color: #ffcc00; background-color: var(--ball-color); }
+.ball-2, .ball-10, .step-ball-2, .step-ball-10 { --ball-color: #0033ff; background-color: var(--ball-color); }
+.ball-3, .ball-11, .step-ball-3, .step-ball-11 { --ball-color: #ff0000; background-color: var(--ball-color); }
+.ball-4, .ball-12, .step-ball-4, .step-ball-12 { --ball-color: #660099; background-color: var(--ball-color); }
+.ball-5, .ball-13, .step-ball-5, .step-ball-13 { --ball-color: #ff6600; background-color: var(--ball-color); }
+.ball-6, .ball-14, .step-ball-6, .step-ball-14 { --ball-color: #006600; background-color: var(--ball-color); }
+.ball-7, .ball-15, .step-ball-7, .step-ball-15 { --ball-color: #990000; background-color: var(--ball-color); }
+.ball-8, .step-ball-8 { background-color: #000; color: black; border: 1px solid #333; }
+.striped, .step-ball-striped {
+  background-image: linear-gradient(to top, white 25%, transparent 25%, transparent 75%, white 75%) !important;
+  background-color: var(--ball-color) !important;
+}
+.cue-ball { background-color: white; color: transparent; }
+.cue-ball::before { content: none; }
+.step-ball.armed { border: 2px solid gold; box-shadow: 0 0 8px gold; }
+.active-step { box-shadow: 0 0 10px 5px rgba(255,0,0,0.7) !important; border: 3px solid white !important; }
