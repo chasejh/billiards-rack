@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
     let sequenceInterval = null;
+    let audioStarting = false;
     let currentStep = 1; 
     let allBalls = []; 
     let tempo = 60000 / 200;
@@ -57,6 +58,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (audioCtx.state !== 'running') {
+            const silentBuffer = audioCtx.createBuffer(1, 1, audioCtx.sampleRate);
+            const unlockSource = audioCtx.createBufferSource();
+            unlockSource.buffer = silentBuffer;
+            unlockSource.connect(audioCtx.destination);
+            unlockSource.start(0);
             await audioCtx.resume();
         }
 
@@ -229,7 +235,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     playPauseBtn.addEventListener('click', async () => {
-        await initAudio();
         if (sequenceInterval) {
             clearInterval(sequenceInterval);
             sequenceInterval = null;
@@ -237,9 +242,20 @@ document.addEventListener('DOMContentLoaded', () => {
             allBalls.forEach(b => b.classList.remove('active-step'));
             Object.values(tracks).forEach(t => t.pads.forEach(p => p.classList.remove('active-step')));
             currentStep = 1;
-        } else {
+            return;
+        }
+
+        if (audioStarting) return;
+        audioStarting = true;
+        try {
+            await initAudio();
             playPauseBtn.classList.add('sequencer-running');
+            advanceSequencer();
             sequenceInterval = setInterval(advanceSequencer, tempo);
+        } catch (error) {
+            console.error('Unable to start audio playback.', error);
+        } finally {
+            audioStarting = false;
         }
     });
 
