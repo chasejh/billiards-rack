@@ -31,31 +31,44 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Sample Loading Logic ---
     async function loadSample(url) {
         const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Sample request failed (${response.status}): ${url}`);
+        }
         const arrayBuffer = await response.arrayBuffer();
         return await audioCtx.decodeAudioData(arrayBuffer);
     }
 
     async function initAudio() {
+        if (!AudioContext) {
+            throw new Error('Web Audio API is not supported in this browser.');
+        }
+
         if (!audioCtx) {
             audioCtx = new AudioContext();
-            Object.keys(tracks).forEach(async (key) => {
-                // Initialize Gains
+            Object.keys(tracks).forEach((key) => {
                 tracks[key].gain = audioCtx.createGain();
                 tracks[key].gain.gain.value = tracks[key].volEl.value;
                 tracks[key].gain.connect(audioCtx.destination);
-                
-                // Load Buffers
-                try {
-                    tracks[key].buffer = await loadSample(sampleMap[key]);
-                } catch (e) {
-                    console.error(`Failed to load sample for ${key}. Check paths.`);
-                }
 
                 tracks[key].volEl.addEventListener('input', (e) => {
                     if (tracks[key].gain) tracks[key].gain.gain.value = e.target.value;
                 });
             });
         }
+
+        if (audioCtx.state !== 'running') {
+            await audioCtx.resume();
+        }
+
+        await Promise.all(Object.keys(tracks).map(async (key) => {
+            if (!tracks[key].buffer) {
+                try {
+                    tracks[key].buffer = await loadSample(sampleMap[key]);
+                } catch (error) {
+                    console.error(`Failed to load sample for ${key}.`, error);
+                }
+            }
+        }));
     }
 
     function playSample(key) {
@@ -104,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const g = audioCtx.createGain();
         g.gain.setValueAtTime(0.2, now);
         g.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-        noise.connect(filter).connect(g).connect(audioCtx.destination);
+        noise.connect(filter).connect(g).connect(tracks.hihat.gain);
         noise.start(now);
     }
 
