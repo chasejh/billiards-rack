@@ -39,5 +39,7 @@ restrict loading audio samples from `file://` URLs.
   the current browser.
 
 Audio playback starts in response to the play button, as required by mobile
-browsers. The sample files are in `samples/`; keep their paths and names intact
-when developing.
+browsers. On iOS, the app requests a playback audio session where the browser
+supports it, so sequencer audio is treated like music or video rather than
+ambient/system sound. The sample files are in `samples/`; keep their paths and
+names intact when developing.

@@ -44,6 +44,10 @@ document.addEventListener('DOMContentLoaded', () => {
             throw new Error('Web Audio API is not supported in this browser.');
         }
 
+        if (navigator.audioSession) {
+            navigator.audioSession.type = 'playback';
+        }
+
         if (!audioCtx) {
             audioCtx = new AudioContext();
             Object.keys(tracks).forEach((key) => {
