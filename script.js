@@ -2,8 +2,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const rackContainer = document.getElementById('rack');
     const playPauseBtn = document.getElementById('play-pause-btn');
     const bpmSlider = document.getElementById('bpm-slider');
-    const bpmDisplay = document.getElementById('bpm-display');
+    const bpmInput = document.getElementById('bpm-input');
     const engineToggle = document.getElementById('engine-toggle');
+    const exportBtn = document.getElementById('export-btn');
     
     const tracks = {
         kick: { el: document.getElementById('kick-sequencer-track'), clear: document.getElementById('clear-kick-btn'), volEl: document.getElementById('kick-vol'), pads: [], state: Array(16).fill(false), gain: null, buffer: null },
@@ -27,7 +28,21 @@ document.addEventListener('DOMContentLoaded', () => {
     let audioStarting = false;
     let currentStep = 1; 
     let allBalls = []; 
-    let tempo = 60000 / 200;
+    let tempo = 60000 / 250 / 4;
+
+    function setBpm(value, preserveInput = false) {
+        const parsedBpm = Number(value);
+        const bpm = Number.isFinite(parsedBpm)
+            ? Math.min(Number(bpmSlider.max), Math.max(Number(bpmSlider.min), Math.round(parsedBpm)))
+            : Number(bpmSlider.value);
+        bpmSlider.value = bpm;
+        if (!preserveInput) bpmInput.value = bpm;
+        tempo = 60000 / bpm / 4;
+        if (sequenceInterval) {
+            clearInterval(sequenceInterval);
+            sequenceInterval = setInterval(advanceSequencer, tempo);
+        }
+    }
 
     // --- Sample Loading Logic ---
     async function loadSample(url) {
@@ -90,76 +105,76 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Audio Synthesis Engines (The fallback) ---
-    function playKickSynth() {
-        const osc = audioCtx.createOscillator();
-        const g = audioCtx.createGain();
-        osc.connect(g); g.connect(tracks.kick.gain);
-        osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-        g.gain.setValueAtTime(1, audioCtx.currentTime);
-        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+    function playKickSynth(context = audioCtx, destination = tracks.kick.gain, when = context.currentTime) {
+        const osc = context.createOscillator();
+        const gain = context.createGain();
+        osc.connect(gain); gain.connect(destination);
+        osc.frequency.setValueAtTime(150, when);
+        osc.frequency.exponentialRampToValueAtTime(0.01, when + 0.15);
+        gain.gain.setValueAtTime(1, when);
+        gain.gain.exponentialRampToValueAtTime(0.001, when + 0.2);
+        osc.start(when); osc.stop(when + 0.2);
     }
 
-    function playSnareSynth() {
-        const now = audioCtx.currentTime;
-        const noise = audioCtx.createBufferSource();
-        const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.1, audioCtx.sampleRate);
+    function playSnareSynth(context = audioCtx, destination = tracks.snare.gain, when = context.currentTime) {
+        const now = when;
+        const noise = context.createBufferSource();
+        const noiseBuffer = context.createBuffer(1, Math.floor(context.sampleRate * 0.1), context.sampleRate);
         const output = noiseBuffer.getChannelData(0);
         for (let i = 0; i < output.length; i++) output[i] = Math.random() * 2 - 1;
         noise.buffer = noiseBuffer;
-        const g = audioCtx.createGain();
+        const g = context.createGain();
         g.gain.setValueAtTime(0.4, now);
         g.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-        noise.connect(g).connect(tracks.snare.gain);
+        noise.connect(g).connect(destination);
         noise.start(now);
     }
 
-    function playHiHatSynth() {
-        const now = audioCtx.currentTime;
-        const noise = audioCtx.createBufferSource();
-        const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.05, audioCtx.sampleRate);
+    function playHiHatSynth(context = audioCtx, destination = tracks.hihat.gain, when = context.currentTime) {
+        const now = when;
+        const noise = context.createBufferSource();
+        const noiseBuffer = context.createBuffer(1, Math.floor(context.sampleRate * 0.05), context.sampleRate);
         const output = noiseBuffer.getChannelData(0);
         for (let i = 0; i < output.length; i++) output[i] = Math.random() * 2 - 1;
         noise.buffer = noiseBuffer;
-        const filter = audioCtx.createBiquadFilter();
+        const filter = context.createBiquadFilter();
         filter.type = 'highpass'; filter.frequency.value = 8000;
-        const g = audioCtx.createGain();
+        const g = context.createGain();
         g.gain.setValueAtTime(0.2, now);
         g.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-        noise.connect(filter).connect(g).connect(tracks.hihat.gain);
+        noise.connect(filter).connect(g).connect(destination);
         noise.start(now);
     }
 
-    function playClapSynth() {
-        const now = audioCtx.currentTime;
-        const noise = audioCtx.createBufferSource();
-        const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.1, audioCtx.sampleRate);
+    function playClapSynth(context = audioCtx, destination = tracks.clap.gain, when = context.currentTime) {
+        const now = when;
+        const noise = context.createBufferSource();
+        const noiseBuffer = context.createBuffer(1, Math.floor(context.sampleRate * 0.1), context.sampleRate);
         const output = noiseBuffer.getChannelData(0);
         for (let i = 0; i < output.length; i++) output[i] = Math.random() * 2 - 1;
         noise.buffer = noiseBuffer;
-        const filter = audioCtx.createBiquadFilter();
+        const filter = context.createBiquadFilter();
         filter.type = 'bandpass'; filter.frequency.value = 1000;
-        const g = audioCtx.createGain();
+        const g = context.createGain();
         g.gain.setValueAtTime(0.5, now);
         g.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-        noise.connect(filter).connect(g).connect(tracks.clap.gain);
+        noise.connect(filter).connect(g).connect(destination);
         noise.start(now);
     }
 
-    function playCrashSynth() {
-        const now = audioCtx.currentTime;
-        const noise = audioCtx.createBufferSource();
-        const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 1.5, audioCtx.sampleRate);
+    function playCrashSynth(context = audioCtx, destination = tracks.crash.gain, when = context.currentTime) {
+        const now = when;
+        const noise = context.createBufferSource();
+        const noiseBuffer = context.createBuffer(1, Math.floor(context.sampleRate * 1.5), context.sampleRate);
         const output = noiseBuffer.getChannelData(0);
         for (let i = 0; i < output.length; i++) output[i] = Math.random() * 2 - 1;
         noise.buffer = noiseBuffer;
-        const filter = audioCtx.createBiquadFilter();
+        const filter = context.createBiquadFilter();
         filter.type = 'highpass'; filter.frequency.value = 3000;
-        const g = audioCtx.createGain();
+        const g = context.createGain();
         g.gain.setValueAtTime(0.3, now);
         g.gain.exponentialRampToValueAtTime(0.01, now + 1.2);
-        noise.connect(filter).connect(g).connect(tracks.crash.gain);
+        noise.connect(filter).connect(g).connect(destination);
         noise.start(now);
     }
 
@@ -175,6 +190,132 @@ document.addEventListener('DOMContentLoaded', () => {
             playSample(key);
         }
     }
+
+    const synthEngines = {
+        kick: playKickSynth,
+        snare: playSnareSynth,
+        hihat: playHiHatSynth,
+        clap: playClapSynth,
+        crash: playCrashSynth
+    };
+
+    function encodeWav(audioBuffer) {
+        const channels = audioBuffer.numberOfChannels;
+        const sampleRate = audioBuffer.sampleRate;
+        const frameCount = audioBuffer.length;
+        const bytesPerSample = 2;
+        const dataSize = frameCount * channels * bytesPerSample;
+        const buffer = new ArrayBuffer(44 + dataSize);
+        const view = new DataView(buffer);
+        const writeText = (offset, text) => {
+            for (let i = 0; i < text.length; i++) view.setUint8(offset + i, text.charCodeAt(i));
+        };
+
+        writeText(0, 'RIFF');
+        view.setUint32(4, 36 + dataSize, true);
+        writeText(8, 'WAVE');
+        writeText(12, 'fmt ');
+        view.setUint32(16, 16, true);
+        view.setUint16(20, 1, true);
+        view.setUint16(22, channels, true);
+        view.setUint32(24, sampleRate, true);
+        view.setUint32(28, sampleRate * channels * bytesPerSample, true);
+        view.setUint16(32, channels * bytesPerSample, true);
+        view.setUint16(34, bytesPerSample * 8, true);
+        writeText(36, 'data');
+        view.setUint32(40, dataSize, true);
+
+        const channelData = Array.from({ length: channels }, (_, channel) => audioBuffer.getChannelData(channel));
+        let offset = 44;
+        for (let frame = 0; frame < frameCount; frame++) {
+            for (let channel = 0; channel < channels; channel++) {
+                const sample = Math.max(-1, Math.min(1, channelData[channel][frame]));
+                view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
+                offset += bytesPerSample;
+            }
+        }
+        return new Blob([buffer], { type: 'audio/wav' });
+    }
+
+    exportBtn.addEventListener('click', async () => {
+        exportBtn.disabled = true;
+        const originalText = exportBtn.textContent;
+        exportBtn.textContent = 'Rendering...';
+        try {
+            await initAudio();
+            const OfflineContext = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+            if (!OfflineContext) {
+                throw new Error('WAV export is not supported in this browser.');
+            }
+
+            const bpm = Number(bpmInput.value);
+            const stepDuration = 60 / bpm / 4;
+            const barDuration = stepDuration * 16;
+            const pattern = Object.fromEntries(Object.keys(tracks).map((key) => [
+                key,
+                {
+                    state: tracks[key].state.slice(),
+                    volume: Number(tracks[key].volEl.value)
+                }
+            ]));
+            const useSynth = engineToggle.checked;
+            if (!useSynth) {
+                const missingSample = Object.keys(tracks).find((key) =>
+                    pattern[key].state.some(Boolean) && !tracks[key].buffer
+                );
+                if (missingSample) {
+                    throw new Error(`The ${missingSample} sample could not be loaded.`);
+                }
+            }
+
+            const longestSample = useSynth ? 0 : Math.max(
+                0,
+                ...Object.keys(tracks).map((key) => tracks[key].buffer?.duration || 0)
+            );
+            const tailDuration = Math.max(2, longestSample);
+            const sampleRate = audioCtx.sampleRate;
+            const frameCount = Math.ceil((barDuration + tailDuration) * sampleRate);
+            const offlineContext = new OfflineContext(2, frameCount, sampleRate);
+            const destinations = {};
+            Object.keys(tracks).forEach((key) => {
+                destinations[key] = offlineContext.createGain();
+                destinations[key].gain.value = pattern[key].volume;
+                destinations[key].connect(offlineContext.destination);
+            });
+
+            Object.keys(tracks).forEach((key) => {
+                pattern[key].state.forEach((isArmed, step) => {
+                    if (!isArmed) return;
+                    const when = step * stepDuration;
+                    if (useSynth) {
+                        synthEngines[key](offlineContext, destinations[key], when);
+                    } else {
+                        const source = offlineContext.createBufferSource();
+                        source.buffer = tracks[key].buffer;
+                        source.connect(destinations[key]);
+                        source.start(when);
+                    }
+                });
+            });
+
+            const renderedBuffer = await offlineContext.startRendering();
+            const wav = encodeWav(renderedBuffer);
+            const downloadUrl = URL.createObjectURL(wav);
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = `billiards-beat-${bpm}bpm-jesschase.wav`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+        } catch (error) {
+            console.error('Unable to export WAV.', error);
+            alert(`Unable to export WAV: ${error.message}`);
+        } finally {
+            exportBtn.disabled = false;
+            exportBtn.textContent = originalText;
+        }
+    });
 
     // --- Rack Generation ---
     const rackStructure = [[1], [2, 3], [4, 8, 5], [6, 7, 9, 10], [11, 12, 13, 14, 15]];
@@ -270,13 +411,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    bpmSlider.addEventListener('input', (e) => {
-        bpmDisplay.textContent = e.target.value;
-        tempo = 60000 / e.target.value;
-        if (sequenceInterval) {
-            clearInterval(sequenceInterval);
-            sequenceInterval = setInterval(advanceSequencer, tempo);
-        }
+    bpmSlider.addEventListener('input', () => setBpm(bpmSlider.value));
+    bpmInput.addEventListener('input', () => {
+        if (bpmInput.value !== '' && bpmInput.validity.valid) setBpm(bpmInput.value, true);
+    });
+    bpmInput.addEventListener('change', () => {
+        setBpm(bpmInput.value === '' ? bpmSlider.value : bpmInput.value);
+    });
+    bpmInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') bpmInput.blur();
     });
 
     document.getElementById('random-btn').addEventListener('click', () => {
@@ -288,7 +431,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('save-btn').addEventListener('click', () => {
         const data = {
-            bpm: bpmSlider.value,
+            bpm: bpmInput.value,
             kick: { state: tracks.kick.state, vol: tracks.kick.volEl.value },
             snare: { state: tracks.snare.state, vol: tracks.snare.volEl.value },
             hihat: { state: tracks.hihat.state, vol: tracks.hihat.volEl.value },
@@ -302,8 +445,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('load-btn').addEventListener('click', () => {
         const data = JSON.parse(localStorage.getItem('billiardsPatternFinal'));
         if (!data) return;
-        bpmSlider.value = data.bpm;
-        bpmDisplay.textContent = data.bpm;
+        setBpm(data.bpm);
         Object.keys(tracks).forEach(key => {
             if (data[key]) {
                 tracks[key].state = data[key].state;
@@ -316,8 +458,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Default Pattern ---
     function applyPattern(data) {
-        bpmSlider.value = data.bpm || bpmSlider.value;
-        bpmDisplay.textContent = bpmSlider.value;
+        setBpm(data.bpm || bpmSlider.value);
         Object.keys(tracks).forEach(key => {
             if (Array.isArray(data[key])) {
                 tracks[key].state = data[key].slice();
@@ -334,7 +475,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const defaultPattern = {
-        bpm: 250,
+        bpm: 120,
         kick: [1,0,3,0,0,0,7,8,0,10,0,0,0,14,0,0],
         snare: [0,0,0,0,5,0,0,0,0,0,0,12,0,0,15,16],
         hihat: [0,2,0,4,0,6,0,0,9,0,11,0,13,0,0,16],
@@ -345,8 +486,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Apply default on first load only if no saved pattern exists
     if (!localStorage.getItem('billiardsPatternFinal')) {
         applyPattern(defaultPattern);
-        tempo = 60000 / bpmSlider.value;
     } else {
-        bpmDisplay.textContent = bpmSlider.value;
+        const savedPattern = JSON.parse(localStorage.getItem('billiardsPatternFinal'));
+        setBpm(savedPattern.bpm || bpmSlider.value);
     }
 });

@@ -33,10 +33,13 @@ restrict loading audio samples from `file://` URLs.
 
 - Tap or click the numbered balls in a track to toggle its steps.
 - Press the red play button to start or stop playback.
-- Adjust the tempo and each track's volume with their sliders.
+- Set the tempo from 40 to 300 BPM using the slider or by typing a BPM value.
+- Adjust each track's volume with its slider.
 - Use the Samples/Synth switch to choose the sound source.
 - Choose **Classic Beats** to generate a pattern, or save and load a pattern in
   the current browser.
+- Choose **Export Beat** to render and download the current 16-step pattern as
+  a WAV file.
 
 Audio playback starts in response to the play button, as required by mobile
 browsers. On iOS, the app requests a playback audio session where the browser

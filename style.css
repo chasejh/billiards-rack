@@ -123,7 +123,6 @@ body {
     background-color: white;
     margin-bottom: 40px;
     color: transparent;
-    border: 3px solid #333;
     z-index: 10;
 }
 
@@ -192,17 +191,99 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 6px;
 }
 
-#bpm-display {
-    display: none;
+#bpm-inputs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#bpm-slider {
+    width: min(280px, 40vw);
+    height: 28px;
+    padding: 0;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+    touch-action: pan-y;
+}
+
+#bpm-slider:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.9);
+    outline-offset: 3px;
+    border-radius: 20px;
+}
+
+#bpm-slider::-webkit-slider-runnable-track {
+    height: 10px;
+    border-radius: 999px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.5), transparent 45%, rgba(50, 25, 10, 0.25)),
+        linear-gradient(90deg, #29211b 0 2%, #f5ead6 2% 5%, #e2c392 5% 34%, #d2a16d 34% 64%, #98572f 64% 97%, #251911 97%);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+#bpm-slider::-webkit-slider-thumb {
+    box-sizing: border-box;
+    width: 23px;
+    height: 23px;
+    margin-top: -7px;
+    appearance: none;
+    border: 1px solid #185b91;
+    border-bottom-width: 3px;
+    border-radius: 3px;
+    background:
+        linear-gradient(135deg, rgba(190, 231, 255, 0.75) 0 20%, transparent 21%),
+        linear-gradient(145deg, #55a9e3, #2879b8 72%, #1e659f);
+    box-shadow: inset 1px 1px 1px rgba(255, 255, 255, 0.4), 0 1px 3px rgba(0, 0, 0, 0.55);
+}
+
+#bpm-slider::-moz-range-track {
+    height: 10px;
+    border: 1px solid #604027;
+    border-radius: 999px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.5), transparent 45%, rgba(50, 25, 10, 0.25)),
+        linear-gradient(90deg, #29211b 0 2%, #f5ead6 2% 5%, #e2c392 5% 34%, #d2a16d 34% 64%, #98572f 64% 97%, #251911 97%);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+#bpm-slider::-moz-range-progress {
+    height: 10px;
+    background: transparent;
+}
+
+#bpm-slider::-moz-range-thumb {
+    box-sizing: border-box;
+    width: 23px;
+    height: 23px;
+    border: 1px solid #185b91;
+    border-bottom-width: 3px;
+    border-radius: 3px;
+    background:
+        linear-gradient(135deg, rgba(190, 231, 255, 0.75) 0 20%, transparent 21%),
+        linear-gradient(145deg, #55a9e3, #2879b8 72%, #1e659f);
+    box-shadow: inset 1px 1px 1px rgba(255, 255, 255, 0.4), 0 1px 3px rgba(0, 0, 0, 0.55);
+}
+
+#bpm-input {
+    box-sizing: border-box;
+    width: 64px;
+    padding: 5px;
+    border: 1px solid #333;
+    border-radius: 5px;
+    text-align: center;
 }
 
 .sequencer-track-container {
-    width: 950px;
+    box-sizing: border-box;
+    width: min(950px, 100%);
     margin-top: 10px;
     display: flex;
     align-items: center;
+    padding: 0 12px;
 }
 
 .track-controls {
@@ -228,7 +309,8 @@ body {
 
 .sequencer-track {
     display: flex;
-    width: 650px;
+    flex: 1;
+    min-width: 0;
     justify-content: space-between;
     padding: 5px 0;
 }
@@ -333,6 +415,16 @@ body {
     color: white;
 }
 
+#export-btn {
+    background: #1c4587;
+    color: white;
+}
+
+#export-btn:disabled {
+    cursor: wait;
+    opacity: 0.7;
+}
+
 .active-step {
     box-shadow: 0 0 10px 5px rgba(255, 0, 0, 0.7) !important;
     border: 3px solid white !important;
@@ -418,7 +510,7 @@ input:checked+.slider:before {
     padding: 2px;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 950px) {
     body {
         padding: 16px 10px 24px;
     }
@@ -448,21 +540,17 @@ input:checked+.slider:before {
     }
 
     #bpm-slider {
-        width: min(85vw, 320px);
-    }
-
-    #bpm-display {
-        display: inline;
+        width: min(60vw, 320px);
     }
 
     .sequencer-track-container {
-        box-sizing: border-box;
         display: grid;
         grid-template-columns: minmax(0, 1fr) 28px;
         gap: 4px;
         width: 100%;
-        max-width: 500px;
+        max-width: 950px;
         margin-top: 12px;
+        padding: 0 12px;
     }
 
     .track-controls {
@@ -522,16 +610,15 @@ input:checked+.slider:before {
     #system-controls {
         box-sizing: border-box;
         width: 100%;
-        max-width: 500px;
+        max-width: 950px;
         gap: 8px;
         margin-top: 18px;
     }
 
     #system-controls button {
         flex: 1;
-        padding: 10px 8px;
-        font-size: 11px;
-        white-space: nowrap;
+        padding: 10px 6px;
+        font-size: clamp(9px, 1.8vw, 12px);
     }
 
     .signature {
